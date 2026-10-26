@@ -139,12 +139,12 @@ async function init(){
 
    if(data.session) await loadOrders();
 
-   db.auth.onAuthStateChange((_event, session)=>{
+      db.auth.onAuthStateChange((_event, session)=>{
      setLoggedIn(!!session);
      if(session) loadOrders();
    });
 
-   } catch(error) {
+ } catch(error) {
    $('loginView').classList.remove('hidden');
    showMsg(
      'loginMsg',
