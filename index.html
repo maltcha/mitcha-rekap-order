@@ -98,8 +98,8 @@ button,input,select,textarea{font:inherit}button{cursor:pointer;border:0;border-
 
 <script>
 /* CONFIG: ganti dua nilai ini dari Project Settings > API di Supabase. Jangan pernah masukkan service_role/secret key ke website. */
-const SUPABASE_URL = "PASTE_SUPABASE_PROJECT_URL_HERE";
-const SUPABASE_ANON_KEY = "PASTE_SUPABASE_ANON_OR_PUBLISHABLE_KEY_HERE";
+const SUPABASE_URL = "https://cpbopctxjffoovmubasu.supabase.co/rest/v1/";
+const SUPABASE_ANON_KEY = "sb_publishable_gHFhDghFYdm6rT1U4UfvLg_CUTpmfvY";
 let db = null, orders = [], expenses = [], editing = false;
 const $ = id => document.getElementById(id);
 const rupiah = n => new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(Number(n||0));
