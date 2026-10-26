@@ -144,7 +144,7 @@ async function init(){
      if(session) loadOrders();
    });
 
-  } catch(error) {
+   } catch(error) {
    $('loginView').classList.remove('hidden');
    showMsg(
      'loginMsg',
@@ -155,6 +155,27 @@ async function init(){
 }
 
 $('loginForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  hideMsg('loginMsg');
+
+  if (!db) {
+    showMsg('loginMsg', 'Koneksi database belum siap. Refresh halaman.', true);
+    return;
+  }
+
+  try {
+    const { error } = await db.auth.signInWithPassword({
+      email: $('email').value.trim(),
+      password: $('password').value
+    });
+
+    if (error) {
+      showMsg('loginMsg', error.message, true);
+    }
+  } catch (error) {
+    showMsg('loginMsg', 'Login gagal: ' + error.message, true);
+  }
+});
   e.preventDefault();
   hideMsg('loginMsg');
 
