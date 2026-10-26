@@ -153,8 +153,24 @@ async function init(){
    );
  }
 }
-}
-$('loginForm').addEventListener('submit',async e=>{e.preventDefault();hideMsg('loginMsg');const {error}=await db.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});if(error)showMsg('loginMsg',error.message,true);});
+
+$('loginForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  hideMsg('loginMsg');
+
+  try {
+    const { error } = await db.auth.signInWithPassword({
+      email: $('email').value.trim(),
+      password: $('password').value
+    });
+
+    if (error) {
+      showMsg('loginMsg', error.message, true);
+    }
+  } catch (error) {
+    showMsg('loginMsg', 'Login gagal: ' + error.message, true);
+  }
+});e.preventDefault();hideMsg('loginMsg');const {error}=await db.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});if(error)showMsg('loginMsg',error.message,true);});
 $('logoutBtn').addEventListener('click',async()=>{await db.auth.signOut();orders=[];setLoggedIn(false);});
 async function loadOrders(){
  const {data,error}=await db.from('orders').select('*').order('order_date',{ascending:false});
