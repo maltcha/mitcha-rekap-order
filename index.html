@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chanarra Store — Rekap Order</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--berry:#d94f70;--berry-dark:#b93458;--pink:#fff0f3;--pink2:#fbd8e0;--matcha:#dce8c8;--matcha-dark:#637b4b;--cream:#fffdf8;--ink:#33372f;--muted:#777b70;--line:#e9e8df;--white:#fff}
+*{box-sizing:border-box}body{margin:0;background:var(--cream);color:var(--ink);font:15px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+button,input,select,textarea{font:inherit}button{cursor:pointer;border:0;border-radius:12px;padding:10px 14px;font-weight:650}
+.shell{max-width:1200px;margin:auto;padding:24px 18px 50px}.top{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:22px}.brand{display:flex;align-items:center;gap:12px}.logo{width:46px;height:46px;border-radius:15px;background:linear-gradient(135deg,var(--pink2),var(--matcha));display:grid;place-items:center;font-size:24px}.brand h1{font-size:21px;line-height:1.2;margin:0}.brand p{margin:4px 0 0;color:var(--muted);font-size:13px}.pill{font-size:12px;color:var(--matcha-dark);background:var(--matcha);border-radius:999px;padding:6px 10px;font-weight:700}
+.card{background:var(--white);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 5px 20px #46351a08}.login-wrap{max-width:420px;margin:8vh auto}.login-wrap h2{margin-top:0}.field{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}.field label{font-size:12px;font-weight:750;color:#64685e}.field input,.field select,.field textarea,.search{width:100%;border:1px solid var(--line);border-radius:11px;background:#fffefa;padding:11px 12px;outline:none;color:var(--ink)}.field input:focus,.field select:focus,.search:focus{border-color:var(--berry);box-shadow:0 0 0 3px #d94f7018}.primary{background:var(--berry);color:white}.primary:hover{background:var(--berry-dark)}.soft{background:var(--pink);color:var(--berry-dark)}.green{background:var(--matcha);color:#415832}.danger{background:#fff0ee;color:#b83f37}.muted{color:var(--muted)}.hidden{display:none!important}.notice{padding:11px 13px;border-radius:12px;background:#fff4e5;color:#7a5520;margin:12px 0;font-size:13px}.error{background:#fff0ee;color:#a7352d}.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:16px}.stat{padding:16px;border-radius:16px;border:1px solid var(--line);background:white}.stat:nth-child(2){background:#fff4f6}.stat:nth-child(3){background:#f5f8ed}.stat:nth-child(4){background:#fff9e9}.stat span{font-size:12px;color:var(--muted)}.stat strong{display:block;font-size:22px;margin-top:5px;overflow-wrap:anywhere}.section-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}.section-head h2{font-size:17px;margin:0}.toolbar{display:flex;gap:8px;flex-wrap:wrap}.filters{display:grid;grid-template-columns:2fr 1fr 1fr;gap:9px;margin-bottom:12px}.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:13px}table{width:100%;border-collapse:collapse;min-width:920px}th,td{text-align:left;padding:12px 13px;border-bottom:1px solid #f0efe8;font-size:13px;vertical-align:top}th{background:#faf9f3;color:#707568;font-size:11px;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}tbody tr:hover{background:#fffaf9}tbody tr:last-child td{border-bottom:0}.badge{display:inline-block;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:750;white-space:nowrap}.active{background:#eaf4df;color:#4d6b36}.soon{background:#fff0d7;color:#8a5a11}.today{background:#ffe1e6;color:#a82d4c}.expired{background:#ecebe7;color:#67685f}.actions{display:flex;gap:5px}.actions button{padding:6px 9px;font-size:12px}.empty{text-align:center;padding:35px;color:var(--muted)}.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 12px}.full{grid-column:1/-1}.modal{position:fixed;inset:0;background:#28251d80;display:grid;place-items:center;padding:14px;z-index:5}.modal-box{width:min(680px,100%);max-height:92vh;overflow:auto;background:var(--cream);border-radius:20px;padding:20px}.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}.modal-head h2{margin:0;font-size:19px}.footer{text-align:center;color:#9b9d92;font-size:12px;margin-top:18px}.small{font-size:12px}.right{display:flex;gap:8px;align-items:center}.money{font-variant-numeric:tabular-nums;white-space:nowrap}.wa-link{display:inline-block;background:#eaf6e4;color:#356b39;text-decoration:none;padding:6px 9px;border-radius:9px;font-weight:750;font-size:12px;white-space:nowrap}.expense-grid{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:9px;align-items:end}@media(max-width:700px){.expense-grid{grid-template-columns:1fr}}
+@media(max-width:700px){.shell{padding:16px 12px 35px}.top{align-items:flex-start}.brand h1{font-size:18px}.top>.right{flex-direction:column;align-items:flex-end}.stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.stat{padding:13px}.stat strong{font-size:19px}.filters{grid-template-columns:1fr}.section-head{align-items:flex-start;flex-direction:column}.form-grid{grid-template-columns:1fr}.full{grid-column:auto}.card{padding:14px}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <header class="top">
+    <div class="brand"><div class="logo">🍓</div><div><h1>Chanarra Store</h1><p>Order tracker · strawberry matcha</p></div></div>
+    <div class="right"><span class="pill">ADMIN ONLY</span><button id="logoutBtn" class="soft hidden">Keluar</button></div>
+  </header>
+
+  <section id="setupNotice" class="card hidden">
+    <h2>Hubungkan database dulu</h2>
+    <p>Isi URL dan anon/publishable key project Supabase di bagian <code>CONFIG</code> dalam file <code>index.html</code>, lalu deploy ulang ke Netlify. Petunjuk lengkap ada di README.</p>
+  </section>
+
+  <section id="loginView" class="login-wrap card">
+    <h2>Login admin 🍵</h2><p class="muted">Masuk untuk melihat dan mengelola rekap order.</p>
+    <div id="loginMsg" class="notice hidden"></div>
+    <form id="loginForm">
+      <div class="field"><label>Email admin</label><input id="email" type="email" autocomplete="username" required placeholder="email admin"></div>
+      <div class="field"><label>Password</label><input id="password" type="password" autocomplete="current-password" required placeholder="Password"></div>
+      <button class="primary" style="width:100%">Masuk</button>
+    </form>
+    <p class="small muted">Akun admin dibuat melalui Supabase Authentication. Pendaftaran publik tidak diperlukan.</p>
+  </section>
+
+  <main id="appView" class="hidden">
+    <div class="stats">
+      <div class="stat"><span>Total order</span><strong id="statTotal">0</strong></div>
+      <div class="stat"><span>Perlu renew (3 hari)</span><strong id="statSoon">0</strong></div>
+      <div class="stat"><span>Total penjualan</span><strong id="statSales">Rp0</strong></div>
+      <div class="stat"><span>Keuntungan kotor</span><strong id="statProfit">Rp0</strong></div>
+    </div>
+    <section class="card" style="margin-bottom:15px">
+      <div class="section-head"><h2>Rekap pesanan</h2><div class="toolbar">
+        <button id="exportBtn" class="green">Ekspor CSV</button><button id="addBtn" class="primary">＋ Tambah order</button>
+      </div></div>
+      <div class="filters">
+        <input id="searchInput" class="search" placeholder="Cari customer, aplikasi, atau FH…">
+        <select id="statusFilter" class="search"><option value="">Semua status</option><option value="active">Aktif</option><option value="soon">Segera renew</option><option value="today">Habis hari ini</option><option value="expired">Kedaluwarsa</option></select>
+        <select id="appFilter" class="search"><option value="">Semua aplikasi</option></select>
+      </div>
+      <div class="table-wrap"><table><thead><tr><th>Tgl order</th><th>Aplikasi</th><th>Customer</th><th>WhatsApp</th><th>Durasi</th><th>Tgl habis</th><th>FH yang proses</th><th>Harga jual</th><th>Modal</th><th>Keuntungan</th><th>Status</th><th>Aksi</th></tr></thead><tbody id="ordersBody"></tbody></table></div>
+      <div id="emptyState" class="empty hidden">Belum ada order. Klik <b>Tambah order</b> untuk mulai mencatat 🍓</div>
+      <p class="small muted">Keuntungan dihitung otomatis: harga jual − harga modal. Status mengikuti tanggal habis.</p>
+    </section>
+    <section class="card" style="margin-bottom:15px">
+      <div class="section-head"><h2>Pengeluaran usaha 💸</h2></div>
+      <form id="expenseForm" class="expense-grid">
+        <div class="field"><label>Tanggal</label><input type="date" id="expenseDate" required></div>
+        <div class="field"><label>Keterangan</label><input id="expenseTitle" required placeholder="Contoh: beli saldo supplier"></div>
+        <div class="field"><label>Nominal (Rp)</label><input type="number" id="expenseAmount" min="1" required placeholder="0"></div>
+        <button class="primary" type="submit">＋ Simpan</button>
+      </form>
+      <div id="expenseMsg" class="notice hidden"></div>
+      <div class="table-wrap"><table style="min-width:500px"><thead><tr><th>Tanggal</th><th>Keterangan</th><th>Nominal</th><th>Aksi</th></tr></thead><tbody id="expensesBody"></tbody></table></div>
+      <p class="small muted">Total pengeluaran: <b id="expenseTotal">Rp0</b> · Laba bersih perkiraan = keuntungan order − pengeluaran.</p>
+    </section>
+    <p class="footer">made with 🍓 & matcha · Chanarra Store</p>
+  </main>
+</div>
+
+<div id="orderModal" class="modal hidden">
+ <div class="modal-box">
+  <div class="modal-head"><h2 id="modalTitle">Tambah order</h2><button id="closeModal" class="soft">Tutup</button></div>
+  <form id="orderForm"><input type="hidden" id="orderId">
+   <div class="form-grid">
+    <div class="field"><label>Tanggal order *</label><input type="date" id="orderDate" required></div>
+    <div class="field"><label>Tanggal habis / renew *</label><input type="date" id="expiryDate" required><small class="muted">Terisi otomatis dari tanggal order + durasi, tetap bisa diedit.</small></div>
+    <div class="field"><label>Nama aplikasi *</label><input id="appName" list="appSuggestions" required placeholder="Contoh: CapCut, Canva"><datalist id="appSuggestions"><option>CapCut</option><option>Canva</option><option>Netflix</option><option>YouTube Premium</option><option>Spotify</option><option>Google One</option><option>Vidio</option><option>Disney+</option><option>DramaWave</option><option>Getcontact</option></datalist></div>
+    <div class="field"><label>Nama customer *</label><input id="customerName" required placeholder="Nama pelanggan"></div>
+    <div class="field"><label>Nomor WhatsApp customer *</label><input id="customerPhone" type="tel" required inputmode="tel" placeholder="Contoh: 081234567890"><small class="muted">Untuk mengirim reminder perpanjangan lewat WhatsApp.</small></div>
+    <div class="field"><label>Durasi *</label><input id="duration" required placeholder="Contoh: 1 bulan, 7 hari"></div>
+    <div class="field"><label>FH yang proses</label><input id="fhName" placeholder="Nama supplier / FH"></div>
+    <div class="field"><label>Harga jual (Rp) *</label><input type="number" id="salePrice" min="0" step="1" required placeholder="0"></div>
+    <div class="field"><label>Harga modal (Rp) *</label><input type="number" id="costPrice" min="0" step="1" required placeholder="0"></div>
+    <div class="field full"><label>Catatan (opsional)</label><textarea id="notes" rows="2" placeholder="Catatan order..."></textarea></div>
+   </div>
+   <div class="notice">Keuntungan otomatis: <b id="profitPreview">Rp0</b></div>
+   <div class="toolbar"><button class="primary" type="submit">Simpan order</button><button class="soft" type="button" id="cancelModal">Batal</button></div>
+   <div id="formMsg" class="notice hidden"></div>
+  </form>
+ </div>
+</div>
+
+<script>
+/* CONFIG: ganti dua nilai ini dari Project Settings > API di Supabase. Jangan pernah masukkan service_role/secret key ke website. */
+const SUPABASE_URL = "PASTE_SUPABASE_PROJECT_URL_HERE";
+const SUPABASE_ANON_KEY = "PASTE_SUPABASE_ANON_OR_PUBLISHABLE_KEY_HERE";
+let db = null, orders = [], expenses = [], editing = false;
+const $ = id => document.getElementById(id);
+const rupiah = n => new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(Number(n||0));
+const todayISO = () => { const d=new Date(); d.setMinutes(d.getMinutes()-d.getTimezoneOffset()); return d.toISOString().slice(0,10); };
+const daysUntil = date => Math.ceil((new Date(date+'T00:00:00')-new Date(todayISO()+'T00:00:00'))/86400000);
+function orderStatus(o){const d=daysUntil(o.expiry_date);if(d<0)return ['expired','Kedaluwarsa'];if(d===0)return ['today','Habis hari ini'];if(d<=3)return ['soon','Segera renew'];return ['active','Aktif'];}
+function calcExpiry(dateText,durationText){if(!dateText||!durationText)return '';const s=durationText.toLowerCase().trim();const m=s.match(/(\d+)\s*(hari|day|days|d|minggu|week|weeks|w|bulan|month|months|bln|m|tahun|year|years|thn|y)/i);if(!m)return '';const n=Number(m[1]),u=m[2].toLowerCase();const d=new Date(dateText+'T12:00:00');if(['hari','day','days','d'].includes(u))d.setDate(d.getDate()+n);else if(['minggu','week','weeks','w'].includes(u))d.setDate(d.getDate()+7*n);else if(['bulan','month','months','bln','m'].includes(u))d.setMonth(d.getMonth()+n);else d.setFullYear(d.getFullYear()+n);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function waUrl(phone,message){let p=String(phone||'').replace(/\D/g,'');if(p.startsWith('0'))p='62'+p.slice(1);if(!p.startsWith('62'))p='62'+p;return 'https://wa.me/'+p+'?text='+encodeURIComponent(message);}
+function reminderText(o){return `Haaai kakk ! ♡\nIzin reminder yaa, paket ${o.app_name} kamu akan habis pada ${dateLabel(o.expiry_date)}.\nKira-kira mau di perpanjang atau ngga kak? nanti boleh konfirmasi ke aku yaaah! terimakasiii 🌻`;}
+function dateLabel(s){if(!s)return '-';const d=new Date(s+'T12:00:00');return d.toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'});}
+function showMsg(id,msg,error=false){const e=$(id);e.textContent=msg;e.classList.remove('hidden');e.classList.toggle('error',error);}
+function hideMsg(id){$(id).classList.add('hidden');}
+function configured(){return SUPABASE_URL.startsWith('https://') && !SUPABASE_URL.includes('PASTE_') && SUPABASE_ANON_KEY.length>20 && !SUPABASE_ANON_KEY.includes('PASTE_');}
+function setLoggedIn(on){$('loginView').classList.toggle('hidden',on);$('appView').classList.toggle('hidden',!on);$('logoutBtn').classList.toggle('hidden',!on);}
+async function init(){
+ if(!configured()){$('setupNotice').classList.remove('hidden');$('loginView').classList.add('hidden');return;}
+ db=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+ const {data:{session}}=await db.auth.getSession();
+ setLoggedIn(!!session); if(session) await loadOrders();
+ db.auth.onAuthStateChange((_event,session)=>{setLoggedIn(!!session);if(session)loadOrders();});
+}
+$('loginForm').addEventListener('submit',async e=>{e.preventDefault();hideMsg('loginMsg');const {error}=await db.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});if(error)showMsg('loginMsg',error.message,true);});
+$('logoutBtn').addEventListener('click',async()=>{await db.auth.signOut();orders=[];setLoggedIn(false);});
+async function loadOrders(){
+ const {data,error}=await db.from('orders').select('*').order('order_date',{ascending:false});
+ if(error){showMsg('loginMsg','Gagal mengambil data: '+error.message,true);return;}
+ orders=data||[];await loadExpenses();render();
+}
+function render(){
+ const q=$('searchInput').value.toLowerCase(),sf=$('statusFilter').value,af=$('appFilter').value;
+ const apps=[...new Set(orders.map(o=>o.app_name).filter(Boolean))].sort();
+ const prev=$('appFilter').value;$('appFilter').innerHTML='<option value="">Semua aplikasi</option>'+apps.map(a=>`<option value="${esc(a)}">${esc(a)}</option>`).join('');$('appFilter').value=apps.includes(prev)?prev:'';
+ const filtered=orders.filter(o=>{
+ const st=orderStatus(o)[0],s=[o.app_name,o.customer_name,o.fh_name,o.duration].join(' ').toLowerCase();
+ return (!q||s.includes(q))&&(!sf||st===sf)&&(!af||o.app_name===af);
+ });
+ $('ordersBody').innerHTML=filtered.map(o=>{const [st,label]=orderStatus(o);return `<tr>
+ <td>${esc(o.order_date)}</td><td><b>${esc(o.app_name)}</b></td><td>${esc(o.customer_name)}</td><td>${o.customer_phone?`<a class=\"wa-link\" target=\"_blank\" rel=\"noopener\" href=\"${waUrl(o.customer_phone,reminderText(o))}\">WA Reminder</a><div class=\"small muted\">${esc(o.customer_phone)}</div>`:'—'}</td><td>${esc(o.duration)}</td><td>${esc(o.expiry_date)}</td><td>${esc(o.fh_name||'—')}</td>
+ <td class="money">${rupiah(o.sale_price)}</td><td class="money">${rupiah(o.cost_price)}</td><td class="money"><b>${rupiah(Number(o.sale_price)-Number(o.cost_price))}</b></td><td><span class="badge ${st}">${label}</span></td>
+ <td><div class="actions"><button class="soft" onclick="editOrder('${o.id}')">Edit</button><button class="danger" onclick="deleteOrder('${o.id}')">Hapus</button></div></td></tr>`}).join('');
+ $('emptyState').classList.toggle('hidden',filtered.length>0);
+ $('statTotal').textContent=orders.length;
+ $('statSoon').textContent=orders.filter(o=>{let d=daysUntil(o.expiry_date);return d>=0&&d<=3}).length;
+ $('statSales').textContent=rupiah(orders.reduce((a,o)=>a+Number(o.sale_price||0),0));
+ $('statProfit').textContent=rupiah(orders.reduce((a,o)=>a+Number(o.sale_price||0)-Number(o.cost_price||0),0));$('expenseTotal').textContent=rupiah(expenses.reduce((a,x)=>a+Number(x.amount||0),0));
+}
+function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+['searchInput','statusFilter','appFilter'].forEach(id=>$(id).addEventListener('input',render));
+function openModal(o=null){
+ editing=!!o;$('modalTitle').textContent=o?'Edit order':'Tambah order';hideMsg('formMsg');
+ $('orderId').value=o?.id||'';$('orderDate').value=o?.order_date||todayISO();$('expiryDate').value=o?.expiry_date||'';
+ $('appName').value=o?.app_name||'';$('customerName').value=o?.customer_name||'';$('customerPhone').value=o?.customer_phone||'';$('duration').value=o?.duration||'';$('fhName').value=o?.fh_name||'';
+ $('salePrice').value=o?.sale_price??'';$('costPrice').value=o?.cost_price??'';$('notes').value=o?.notes||'';previewProfit();$('orderModal').classList.remove('hidden');
+}
+window.editOrder=id=>openModal(orders.find(o=>o.id===id));
+window.deleteOrder=async id=>{const o=orders.find(x=>x.id===id);if(!o||!confirm(`Hapus order ${o.customer_name} — ${o.app_name}?`))return;const {error}=await db.from('orders').delete().eq('id',id);if(error)alert('Gagal menghapus: '+error.message);else await loadOrders();};
+function previewProfit(){$('profitPreview').textContent=rupiah(Number($('salePrice').value||0)-Number($('costPrice').value||0));}
+function updateExpiry(){const v=calcExpiry($('orderDate').value,$('duration').value);if(v)$('expiryDate').value=v;}
+$('orderDate').addEventListener('change',updateExpiry);$('duration').addEventListener('input',updateExpiry);
+$('salePrice').addEventListener('input',previewProfit);$('costPrice').addEventListener('input',previewProfit);$('expenseDate').value=todayISO();
+$('addBtn').addEventListener('click',()=>openModal());$('closeModal').addEventListener('click',()=>$('orderModal').classList.add('hidden'));$('cancelModal').addEventListener('click',()=>$('orderModal').classList.add('hidden'));
+$('orderForm').addEventListener('submit',async e=>{
+ e.preventDefault();hideMsg('formMsg');
+ const payload={order_date:$('orderDate').value,expiry_date:$('expiryDate').value,app_name:$('appName').value.trim(),customer_name:$('customerName').value.trim(),customer_phone:$('customerPhone').value.trim(),duration:$('duration').value.trim(),fh_name:$('fhName').value.trim(),sale_price:Number($('salePrice').value),cost_price:Number($('costPrice').value),notes:$('notes').value.trim()};
+ const id=$('orderId').value;
+ const result=id?await db.from('orders').update(payload).eq('id',id):await db.from('orders').insert(payload);
+ if(result.error){showMsg('formMsg','Gagal menyimpan: '+result.error.message,true);return;}
+ $('orderModal').classList.add('hidden');await loadOrders();
+});
+$('exportBtn').addEventListener('click',()=>{
+ const headers=['Tanggal Order','Nama Aplikasi','Tanggal Habis','Nama Customer','Nomor WhatsApp','Durasi','Harga Jual','Harga Modal','FH yang Proses','Keuntungan','Status','Catatan'];
+ const rows=orders.map(o=>[o.order_date,o.app_name,o.expiry_date,o.customer_name,o.customer_phone,o.duration,o.sale_price,o.cost_price,o.fh_name,Number(o.sale_price)-Number(o.cost_price),orderStatus(o)[1],o.notes]);
+ const csv=[headers,...rows].map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\r\n');
+ const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='chanarra-rekap-order-'+todayISO()+'.csv';a.click();URL.revokeObjectURL(url);
+});
+
+async function loadExpenses(){const {data,error}=await db.from('expenses').select('*').order('expense_date',{ascending:false});if(error){showMsg('expenseMsg','Belum bisa memuat pengeluaran. Pastikan SQL update dijalankan di Supabase: '+error.message,true);expenses=[];}else expenses=data||[];renderExpenses();}
+function renderExpenses(){if(!$('expensesBody'))return;$('expensesBody').innerHTML=expenses.map(x=>`<tr><td>${esc(x.expense_date)}</td><td>${esc(x.title)}</td><td class="money">${rupiah(x.amount)}</td><td><button class="danger" onclick="deleteExpense('${x.id}')">Hapus</button></td></tr>`).join('');$('expenseTotal').textContent=rupiah(expenses.reduce((a,x)=>a+Number(x.amount||0),0));}
+window.deleteExpense=async id=>{if(!confirm('Hapus catatan pengeluaran ini?'))return;const {error}=await db.from('expenses').delete().eq('id',id);if(error)alert('Gagal menghapus: '+error.message);else await loadExpenses();};
+$('expenseForm').addEventListener('submit',async e=>{e.preventDefault();hideMsg('expenseMsg');const payload={expense_date:$('expenseDate').value,title:$('expenseTitle').value.trim(),amount:Number($('expenseAmount').value)};const {error}=await db.from('expenses').insert(payload);if(error){showMsg('expenseMsg','Gagal menyimpan. Pastikan SQL update sudah dijalankan: '+error.message,true);return;}$('expenseTitle').value='';$('expenseAmount').value='';await loadExpenses();});
+init();
+</script>
+</body>
+</html>
