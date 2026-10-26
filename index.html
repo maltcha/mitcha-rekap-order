@@ -115,11 +115,44 @@ function hideMsg(id){$(id).classList.add('hidden');}
 function configured(){return SUPABASE_URL.startsWith('https://') && !SUPABASE_URL.includes('PASTE_') && SUPABASE_ANON_KEY.length>20 && !SUPABASE_ANON_KEY.includes('PASTE_');}
 function setLoggedIn(on){$('loginView').classList.toggle('hidden',on);$('appView').classList.toggle('hidden',!on);$('logoutBtn').classList.toggle('hidden',!on);}
 async function init(){
- if(!configured()){$('setupNotice').classList.remove('hidden');$('loginView').classList.add('hidden');return;}
- db=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
- const {data:{session}}=await db.auth.getSession();
- setLoggedIn(!!session); if(session) await loadOrders();
- db.auth.onAuthStateChange((_event,session)=>{setLoggedIn(!!session);if(session)loadOrders();});
+ if(!configured()){
+   $('setupNotice').classList.remove('hidden');
+   $('loginView').classList.add('hidden');
+   return;
+ }
+
+ try {
+   if(!window.supabase){
+     throw new Error('Library Supabase gagal dimuat. Periksa koneksi internet.');
+   }
+
+   db = window.supabase.createClient(
+     SUPABASE_URL,
+     SUPABASE_ANON_KEY
+   );
+
+   const {data, error} = await db.auth.getSession();
+
+   if(error) throw error;
+
+   setLoggedIn(!!data.session);
+
+   if(data.session) await loadOrders();
+
+   db.auth.onAuthStateChange((_event, session)=>{
+     setLoggedIn(!!session);
+     if(session) loadOrders();
+   });
+
+ } catch(error) {
+   $('loginView').classList.remove('hidden');
+   showMsg(
+     'loginMsg',
+     'Koneksi gagal: ' + (error.message || String(error)),
+     true
+   );
+ }
+}
 }
 $('loginForm').addEventListener('submit',async e=>{e.preventDefault();hideMsg('loginMsg');const {error}=await db.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});if(error)showMsg('loginMsg',error.message,true);});
 $('logoutBtn').addEventListener('click',async()=>{await db.auth.signOut();orders=[];setLoggedIn(false);});
