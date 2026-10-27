@@ -158,7 +158,54 @@ function openModal(o=null){
  $('salePrice').value=o?.sale_price??'';$('costPrice').value=o?.cost_price??'';$('notes').value=o?.notes||'';previewProfit();updateContactFields();$('orderModal').classList.remove('hidden');
 }
 window.editOrder=id=>openModal(orders.find(o=>o.id===id));
-window.deleteOrder=async id=>{const o=orders.find(x=>x.id===id);if(!o||!confirm(`Hapus order ${o.customer_name} — ${o.app_name}?`))return;const {error}=await db.from('orders').delete().eq('id',id);if(error)alert('Gagal menghapus: '+error.message);else await loadOrders();};
+window.deleteOrder = async id => {
+  const o = orders.find(x => String(x.id) === String(id));
+
+  if (!o) {
+    alert('Order tidak ditemukan. Coba muat ulang halaman, ya!');
+    return;
+  }
+
+  const yakin = confirm(
+    `Yakin mau hapus order ini?\n\nCustomer: ${o.customer_name}\nAplikasi: ${o.app_name}\n\nData yang dihapus tidak bisa dikembalikan melalui web.`
+  );
+
+  if (!yakin) return;
+
+  try {
+    const { data, error } = await db
+      .from('orders')
+      .delete()
+      .eq('id', id)
+      .select('id');
+
+    if (error) {
+      console.error('Gagal menghapus order:', error);
+      alert(
+        'Order gagal dihapus!\n\n' +
+        'Pesan: ' + error.message +
+        '\n\nPeriksa izin DELETE pada database Supabase.'
+      );
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      alert(
+        'Order tidak terhapus karena database tidak mengembalikan data yang dihapus.\n\n' +
+        'Kemungkinan penyebabnya adalah izin DELETE atau Row Level Security (RLS) Supabase.'
+      );
+      return;
+    }
+
+    alert('Order berhasil dihapus! 🍓');
+
+    await loadOrders();
+
+  } catch (err) {
+    console.error(err);
+    alert('Terjadi kesalahan: ' + err.message);
+  }
+};
 function previewProfit(){$('profitPreview').textContent=rupiah(Number($('salePrice').value||0)-Number($('costPrice').value||0));}
 function updateExpiry(){const v=calcExpiry($('orderDate').value,$('duration').value);if(v)$('expiryDate').value=v;}
 $('orderDate').addEventListener('change',updateExpiry);$('duration').addEventListener('input',updateExpiry);
